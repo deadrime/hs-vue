@@ -1,6 +1,19 @@
-# hs
+# Hearthstone vue project
 
-> A Vue.js project
+> Hearthstone deck library and deck builder created by Vue.js and vue-cli
+
+Hearthstone module in components/hs.vue
+
+## TODO
+- [ ] Self API (md based on mongoDB)
+- [ ] Russian lang and cards
+- [ ] Language changer
+- [ ] Search with auto complete
+- [ ] Locate images on my own server to improve its loading speed
+- [ ] Images preloader
+- [ ] Normal design
+- [ ] App animations
+- [ ] Optimization and build in gulp with some hipster things like PostCss
 
 ## Build Setup
 
