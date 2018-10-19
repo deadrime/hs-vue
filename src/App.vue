@@ -1,19 +1,26 @@
 <template>
   <div id="app">
-      <hs></hs>
-      <!--<vueTable></vueTable>-->
+    <Hs msg="Welcome to Your Vue.js App"/>
   </div>
 </template>
 
 <script>
-import vueTable from './components/table.vue'
-import hs from './components/hs.vue'
+import Hs from './components/HelloWorld.vue'
 
 export default {
   name: 'app',
   components: {
-      vueTable,
-      hs
+    Hs,
   }
 }
 </script>
+
+<style>
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
+</style>

@@ -1,14 +1,13 @@
-// The following line loads the standalone build of Vue instead of the runtime-only build,
-// so you don't have to do: import Vue from 'vue/dist/vue'
-// This is done with the browser options. For the config, see package.json
 import Vue from 'vue'
 import App from './App.vue'
-import BootstrapVue from 'bootstrap-vue'
-/* ...there may be other imports here */
+import 'element-ui/lib/theme-chalk/index.css'
+import './plugins/element.js'
+import VueProgressiveImage from 'vue-progressive-image'
 
-Vue.use(BootstrapVue)
+Vue.use(VueProgressiveImage)
 
-new Vue({ // eslint-disable-line no-new
-  el: '#app',
-  render: (h) => h(App)
-});
+Vue.config.productionTip = false
+
+new Vue({
+  render: h => h(App)
+}).$mount('#app')
