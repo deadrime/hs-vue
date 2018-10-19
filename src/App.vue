@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import Hs from './components/HelloWorld.vue'
+import Hs from './components/Hs.vue'
 
 export default {
   name: 'app',
