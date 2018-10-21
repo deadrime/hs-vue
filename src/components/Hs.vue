@@ -126,15 +126,9 @@
 </template>
 
 <script>
-import VueLoading from 'vue-simple-loading'
-import Multiselect from 'vue-multiselect'
 import { encode, decode } from 'deckstrings'
 
 export default {
-  components: {
-    VueLoading,
-    Multiselect
-  },
   name: 'hs',
   data() {
     return {
