@@ -2,7 +2,7 @@
   <div class="hs-app">
     <div class="content">
       <!-- Выбор класса -->
-      <el-row class="row">
+      <el-row class="row classes-list">
         <el-radio-group v-model="selectedClass" size="small">
           <el-radio-button
             v-for="(key, title) in classes" 
@@ -235,12 +235,10 @@ export default {
       }
     },
     pickCard(card) {
-      // добавление карты в колоду
-      console.log(card)
       if (this.pickedCardsCount >= 30) return
       const id = parseInt(card.dbfId)
       let newCard = {
-        ...card,
+        ...card, 
         count: 1,
         dbfId: id
       }
@@ -258,6 +256,9 @@ export default {
         this.pickedCardsCount++
         this.$set(this.pickedCards, id, newCard)
       }
+      this.$nextTick(() => {
+        this.handleResize()
+      })
     },
     deleteCard(card) {
       // Удаление карты TODO - сделать отмену действий
@@ -268,6 +269,9 @@ export default {
       } else {
         this.$delete(this.pickedCards, card.dbfId)
       }
+      this.$nextTick(() => {
+        this.handleResize()
+      })
     },
     generateDeckCode() {
       //Генерация кода колоды для импорта в игру
@@ -414,7 +418,7 @@ export default {
       })
       let key = this.sortBy // тип - cost или name
       let reverse = this.sortDesc ? -1 : 1 // порядок
-      result = result.sort(function compare(a, b) {
+      result = result.sort((a, b) => {
         if (a[key] < b[key]) return -1 * reverse
         if (a[key] > b[key]) return reverse
         return 0
@@ -426,8 +430,13 @@ export default {
 }
 </script>
 <style>
+.classes-list {
+  margin-bottom: 6px;
+}
+
 .hs-app {
   display: flex;
+  padding: 0 40px;
 }
 
 .content {
