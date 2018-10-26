@@ -83,6 +83,10 @@
           inactive-text="Asc"/>
         <el-button type="danger" size="small">Reset</el-button>
       </el-row>
+      <el-radio-group v-model="isNeutral" size="mini">
+        <el-radio :label="false" border>{{selectedClass}}</el-radio>
+        <el-radio :label="true" border>Neutral</el-radio>
+      </el-radio-group>
       <!-- Картонки -->
       <el-row class="row">
         <div 
@@ -91,12 +95,13 @@
           ref="cards"
           element-loading-text="Loading...">
           <progressive-background
-            v-for="card in displayCards()"
+            v-for="card in displayCards"
             :key="card.cardId"
             @click.native="pickCard(card)"
             class="single-card"
             :src="card.img" />
         </div>
+        <span v-if="totalRows === 0 && isLoaded">Not found</span>
         <el-pagination
           v-if="totalRows"
           layout="prev, pager, next"
@@ -162,6 +167,7 @@ export default {
       manaData: [0, 1, 2, 3, 4, 5, 6, 7, 8, '9+'],
       sortBy: 'cost', //тип сортировки - по мане или по алфавиту
       sortDesc: false, // по возрастанию или по убыванию
+      isNeutral: false,
       searchStr: '',
 
       isLoaded: false, //Загружены ли все карты
@@ -182,6 +188,66 @@ export default {
         if (a.cost > b.cost) return 1
         return 0
       })
+    },
+    displayCards() {
+      // Главный говнокод - сортировка карт
+      let result = [] // это мы вернем
+      let start = (this.currentPage - 1) * this.perPage // начиная откуда выводим
+      let end = start + this.perPage // где заканчиваем
+      result = this.cards.filter(card => {
+        let name = card['name'].toLowerCase()
+        let text = card['text'] ? card['text'].toLowerCase() : ''
+        let cardClass = card['playerClass'] || ''
+        let search = this.searchStr.toLowerCase()
+        // TODO - попробовать сократить количество if
+        if (
+          this.searchStr &&
+          name.indexOf(search) === -1 &&
+          text.indexOf(search) === -1
+        ) {
+          return false
+        }
+        if (this.selectedClass) {
+          if (this.isNeutral) {
+            if (cardClass !== 'Neutral') return false
+          }
+          else if (cardClass !== this.selectedClass) return false
+        }
+        if (
+          this.selectedAdventure.length > 0 &&
+          !this.selectedAdventure.includes(card['cardSet'])
+        ) {
+          return false
+        }
+        if (this.selectedMechanics.length > 0 && !card['mechanics']) {
+          //Вот с этим точно можно что-то сделапть
+          return false
+        }
+        if (this.selectedMechanics.length > 0 && card['mechanics']) {
+          let finded = card.mechanics.some(mechanic =>
+            this.selectedMechanics.includes(mechanic.name)
+          );
+          if (!finded) return false
+        }
+        if (this.selectedRaces.length > 0 && !card.race) {
+          return false
+        }
+        if (this.selectedRaces.length > 0 && card.race) {
+          if (!this.selectedRaces.includes(card.race)) {
+            return false
+          }
+        }
+        return true
+      })
+      let key = this.sortBy // тип - cost или name
+      let reverse = this.sortDesc ? -1 : 1 // порядок
+      result = result.sort((a, b) => {
+        if (a[key] < b[key]) return -1 * reverse
+        if (a[key] > b[key]) return reverse
+        return 0
+      })
+      this.totalRows = result.length //обновляем количество карт
+      return result.slice(start, end) // пагинация
     }
   },
   created() {
@@ -189,14 +255,9 @@ export default {
     window.addEventListener('resize', this.handleResize)
   },
   watch: {
-    // Отслеживание изменений значения
     searchStr(val) {
-      this.displayCards()
       this.currentPage = 1
     },
-    selectedAdventure() {
-      this.displayCards()
-    }
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.handleResize)
@@ -362,70 +423,7 @@ export default {
       const cardW = this.$refs.cards.children[1].clientWidth
       const cardsInRow = Math.floor(cardsW/cardW)
       this.perPage = cardsInRow * Math.round(this.perPage/cardsInRow)
-      this.displayCards()
     },
-    displayCards() {
-      // Главный говнокод - сортировка карт
-      let result = [] // это мы вернем
-      let start = (this.currentPage - 1) * this.perPage // начиная откуда выводим
-      let end = start + this.perPage // где заканчиваем
-      result = this.cards.filter(card => {
-        let name = card['name'].toLowerCase()
-        let text = card['text'] ? card['text'].toLowerCase() : ''
-        let cardClass = card['playerClass'] || ''
-        let search = this.searchStr.toLowerCase()
-        // TODO - попробовать сократить количество if
-        if (
-          this.searchStr &&
-          name.indexOf(search) === -1 &&
-          text.indexOf(search) === -1
-        ) {
-          return false
-        }
-        if (this.selectedClass && cardClass !== this.selectedClass) {
-          return false
-        }
-        if (
-          this.selectedAdventure.length > 0 &&
-          !this.selectedAdventure.includes(card['cardSet'])
-        ) {
-          return false
-        }
-        if (this.selectedMechanics.length > 0 && !card['mechanics']) {
-          //Вот с этим точно можно что-то сделапть
-          return false
-        }
-        if (this.selectedMechanics.length > 0 && card['mechanics']) {
-          let finded = false
-          for (let mechanic of card['mechanics']) {
-            if (this.selectedMechanics.includes(mechanic.name)) {
-              finded = true
-            }
-          }
-          if (!finded) {
-            return false
-          }
-        }
-        if (this.selectedRaces.length > 0 && !card.race) {
-          return false
-        }
-        if (this.selectedRaces.length > 0 && card.race) {
-          if (!this.selectedRaces.includes(card.race)) {
-            return false
-          }
-        }
-        return true
-      })
-      let key = this.sortBy // тип - cost или name
-      let reverse = this.sortDesc ? -1 : 1 // порядок
-      result = result.sort((a, b) => {
-        if (a[key] < b[key]) return -1 * reverse
-        if (a[key] > b[key]) return reverse
-        return 0
-      })
-      this.totalRows = result.length //обновляем количество карт
-      return result.slice(start, end) // пагинация
-    }
   }
 }
 </script>
@@ -436,7 +434,6 @@ export default {
 
 .hs-app {
   display: flex;
-  padding: 0 40px;
 }
 
 .content {
@@ -453,7 +450,7 @@ export default {
   margin-bottom: 0.4em;
 }
 .sorting {
-  margin-top: 0.5rem;
+  margin: 0.5rem 0;
 }
 .sorting > * {
   margin: 0 0.5rem;
